@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOAM GAMING DEALS</title>
+<style>
+:root{--bg:#070b14;--card:#101827;--blue:#00b7ff;--text:#f3f7ff;--muted:#9baac0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:30px 16px;text-align:center;background:radial-gradient(ellipse at top,#073a60,#070b14 75%)}
+.logo{font-size:clamp(27px,7vw,45px);font-weight:900;letter-spacing:1px}
+.logo span{color:var(--blue)}
+header p{color:var(--muted)}
+main{max-width:1100px;margin:auto;padding:18px}
+.search{width:100%;padding:16px;border:1px solid #263b55;border-radius:12px;background:#101827;color:white;font-size:16px;outline:none}
+.search:focus{border-color:var(--blue)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 22px}
+button,select{background:#101827;color:white;border:1px solid #263b55;border-radius:9px;padding:11px;cursor:pointer}
+button.active,button:hover,.primary{background:var(--blue);color:#00111b;border-color:var(--blue);font-weight:bold}
+h2{font-size:21px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.card{background:var(--card);border:1px solid #1d2d43;border-radius:15px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.emoji{font-size:42px}
+.card h3{margin:0;font-size:19px}
+.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto}
+.links a{display:block;text-align:center;padding:10px 5px;border-radius:8px;background:#17263b;color:#8cddff;text-decoration:none;font-size:13px}
+.links a:hover{background:#203c59}
+.note{font-size:13px;color:var(--muted);line-height:1.7;margin-top:22px}
+footer{text-align:center;color:var(--muted);padding:25px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">NOAM <span>GAMING</span> DEALS</div>
+  <p>מוצאים ציוד גיימינג במחיר משתלם בישראל 🎮</p>
+</header>
+<main>
+  <input id="search" class="search" placeholder="🔎 חפש מוצר, למשל RTX 5080 או עכבר..." aria-label="חיפוש מוצרים">
+  <div class="filters" id="filters"></div>
+  <h2 id="heading">כל מוצרי הגיימינג</h2>
+  <div class="grid" id="products"></div>
+  <p class="note">💡 הקישורים פותחים חיפוש בחנויות. המחירים והמלאי עשויים להשתנות. האתר אינו מציג מחירים חיים או מבטיח שהמוצר הזול ביותר נמצא בתוצאות.</p>
+</main>
+<footer>NOAM GAMING DEALS © 2026</footer>
+<script>
+const stores=[
+ {name:"KSP",url:"https://ksp.co.il/web/search?search="},
+ {name:"Ivory",url:"https://www.ivory.co.il/catalog.php?act=cat&q="},
+ {name:"TMS",url:"https://tms.co.il/catalogsearch/result/?q="},
+ {name:"Plonter",url:"https://www.plonter.co.il/search.php?key="},
+ {name:"BUG",url:"https://www.bug.co.il/search?q="},
+ {name:"LastPrice",url:"https://www.lastprice.co.il/search/?q="}
+];
+const categories=[
+ {name:"עכברים",icon:"🖱️",terms:["עכבר גיימינג","Logitech G Pro X Superlight","Razer Viper"]},
+ {name:"מקלדות",icon:"⌨️",terms:["מקלדת גיימינג","SteelSeries Apex Pro Mini","מקלדת Hall Effect"]},
+ {name:"מסכים",icon:"🖥️",terms:["מסך גיימינג 240Hz","מסך OLED גיימינג","מסך ASUS TUF"]},
+ {name:"אוזניות",icon:"🎧",terms:["אוזניות גיימינג","HyperX Cloud","SteelSeries Arctis"]},
+ {name:"מחשבים",icon:"💻",terms:["מחשב גיימינג RTX 5080","מחשב גיימינג RTX 5090","מחשב גיימינג RTX 5070"]},
+ {name:"כרטיסי מסך",icon:"🎮",terms:["RTX 5090","RTX 5080","RTX 5070 Ti"]},
+ {name:"מעבדים",icon:"⚙️",terms:["AMD Ryzen 7 X3D","AMD Ryzen 9","Intel Core Ultra"]},
+ {name:"זיכרון RAM",icon:"🧠",terms:["DDR5 32GB","DDR5 64GB","זיכרון RAM DDR5"]},
+ {name:"SSD ואחסון",icon:"💾",terms:["SSD NVMe 2TB","SSD NVMe 1TB","SSD 4TB"]},
+ {name:"לוחות אם",icon:"🔌",terms:["לוח אם AM5","לוח אם X870","לוח אם B850"]},
+ {name:"מארזים וספקים",icon:"🧰",terms:["מארז מחשב גיימינג","ספק כוח 1000W","ספק כוח 850W"]},
+ {name:"כיסאות ושולחנות",icon:"🪑",terms:["כיסא גיימינג","שולחן גיימינג 180 ס״מ","כיסא ארגונומי"]},
+ {name:"בקרים",icon:"🎮",terms:["שלט PS5 DualSense","בקר Xbox","בקר גיימינג למחשב"]},
+ {name:"מיקרופונים",icon:"🎙️",terms:["מיקרופון גיימינג USB","HyperX QuadCast","מיקרופון סטרימינג"]},
+ {name:"משטחי עכבר",icon:"🖱️",terms:["משטח עכבר גיימינג XXL","משטח עכבר מהיר","משטח עכבר SteelSeries"]},
+ {name:"מצלמות רשת",icon:"📷",terms:["מצלמת רשת 1080p","מצלמת רשת 4K","Logitech Brio"]}
+];
+const products=[];
+categories.forEach(c=>c.terms.forEach(term=>products.push({...c,title:term,category:c.name})));
+let active="הכול";
+const filters=document.getElementById("filters");
+function makeFilters(){
+ filters.innerHTML="";
+ ["הכול",...categories.map(c=>c.name)].forEach(name=>{
+  const b=document.createElement("button");
+  b.textContent=name;b.className=active===name?"active":"";
+  b.onclick=()=>{active=name;render();makeFilters()};
+  filters.appendChild(b);
+ });
+}
+function render(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ const list=products.filter(p=>(active==="הכול"||p.category===active)&&
+ (p.title.toLowerCase().includes(q)||p.category.toLowerCase().includes(q)));
+ document.getElementById("heading").textContent=list.length?"מוצרים לחיפוש שלך":"לא נמצאו מוצרים";
+ const root=document.getElementById("products");root.innerHTML="";
+ list.forEach(p=>{
+  const card=document.createElement("article");card.className="card";
+  const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=p.icon;card.appendChild(emoji);
+  const title=document.createElement("h3");title.textContent=p.title;card.appendChild(title);
+  const desc=document.createElement("p");desc.textContent="בדוק מחיר וזמינות בחנויות בישראל.";card.appendChild(desc);
+  const links=document.createElement("div");links.className="links";
+  stores.forEach(s=>{
+   const a=document.createElement("a");
+   a.href=s.url+encodeURIComponent(p.title);
+   a.target="_blank";a.rel="noopener noreferrer";a.textContent=s.name;
+   links.appendChild(a);
+  });
+  card.appendChild(links);root.appendChild(card);
+ });
+}
+document.getElementById("search").addEventListener("input",render);
+makeFilters();render();
+</script>
+</body>
+</html>
